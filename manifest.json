@@ -1,0 +1,16 @@
+{
+  "name": "the app",
+  "short_name": "the app",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "icons": [
+    {
+      "src": "https://icons8.com",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
+
