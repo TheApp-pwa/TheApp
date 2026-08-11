@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>the app</title>
+
+    <!-- Подключаем PWA Манифест -->
+    <link rel="manifest" href="manifest.json">
+
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#000000">
+
+    <link rel="icon" type="image/png" href="https://icons8.com">
+    <link rel="apple-touch-icon" href="https://icons8.com">
+
+    <style>
+        body {
+            background-color: #000; color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            height: 100vh; margin: 0; overflow: hidden; user-select: none;
+        }
+        #status { font-size: 24px; font-weight: 300; transition: opacity 0.5s; color: #888888; }
+        
+        #content-wrapper {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #000000; 
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center; 
+            z-index: 9999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease-in-out;
+        }
+        
+        #content-wrapper.visible {
+            opacity: 1 !important;
+            pointer-events: auto !important;
+        }
+
+        #main-info-text { 
+            font-size: 26px !important; 
+            font-weight: bold !important; 
+            text-align: center !important; 
+            padding: 20px !important; 
+            color: #ff3366 !important; 
+            max-width: 90%;
+            line-height: 1.4;
+            text-decoration: none;
+            cursor: pointer;
+            display: block;
+        }
+        #main-info-text:hover { opacity: 0.8; }
+        
+        #sub-title-text { color: #ffcc00 !important; margin-top: 20px; font-size: 18px; text-transform: uppercase; letter-spacing: 2px; text-align: center; padding: 0 10px; }
+        #counter-panel { margin-top: 30px; font-size: 14px; color: #888888 !important; }
+        #digit-val { color: #ff3366 !important; font-weight: bold; }
+
+        #custom-alert {
+            position: fixed; bottom: 40px; width: 85%; max-width: 380px;
+            background: #1c1c1e; border-radius: 28px; padding: 24px;
+            box-sizing: border-box; display: none; flex-direction: column;
+            gap: 16px; z-index: 10000; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        #alert-title { font-size: 18px; font-weight: bold; color: #ffffff; }
+        #alert-message { font-size: 16px; color: #e5e5ea; line-height: 1.4; }
+        #alert-btn {
+            align-self: center; background: transparent; border: none;
+            color: #ffffff; font-size: 16px; font-weight: bold;
+            padding: 10px 40px; cursor: pointer; text-transform: uppercase;
+            letter-spacing: 1px; margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="status">The app работает</div>
+
+    <div id="content-wrapper">
+        <a id="main-info-text" target="_blank">ЗАГРУЗКА...</a>
+        <div id="sub-title-text">💥 TIRED OF THIS APP? LET'S THE THIS AD! 💥</div>
+        <div id="counter-panel">Осталось <span id="digit-val">3</span> сек.</div>
+    </div>
+
+    <div id="custom-alert">
+        <div id="alert-title">Подтвердите действие</div>
+        <div id="alert-message">Are you sure you want to The this App?</div>
+        <button id="alert-btn">OK</button>
+    </div>
+
+    <script>
+    const statusDiv = document.getElementById('status');
+    const contentWrapper = document.getElementById('content-wrapper');
+    const digitVal = document.getElementById('digit-val');
+    const mainInfoText = document.getElementById('main-info-text');
+    
+    const customAlert = document.getElementById('custom-alert');
+    const alertTitle = document.getElementById('alert-title');
+    const alertMessage = document.getElementById('alert-message');
+    const alertBtn = document.getElementById('alert-btn');
+
+    function playSound(type) {
+        const sounds = {
+            pop: 'https://google.com',
+            click: 'https://google.com',
+            error: 'https://google.com'
+        };
+        try {
+            const audio = new Audio(sounds[type]);
+            audio.volume = 0.4;
+            audio.play();
+        } catch (e) {
+            console.log("Ошибка звука:", e);
+        }
+    }
+
+    const adsDatabase = [
+        {
+            text: "🎞 КУПИТЕ БИЛЕТЫ НА «ФИЛЬМ-КИНО ФИЛЬМ В КИНО: увидимся в кино фильм»! 🕚\n(Режиссер: Кто-то, В главной роли: Кто-нибудь)",
+            urls: ["https://kinopoisk.ru", "https://imdb.com", "https://afisha.ru"]
+        },
+        {
+            text: "🕷️ WHEN YOU'RE WALKING IN NEW YORK AND SOMEONE SAYS: \"LET'S SPIDER THIS MAN\" 🕸️",
+            urls: ["https://marvel.com", "https://playstation.com", "https://rottentomatoes.com"]
+        },
+        {
+            text: "🕺 WHEN YOU'RE LISTENING TO ELECTRONIC MUSIC AND SOMEONE SAYS: \"LET'S CLUTTER THIS FUNK\" 🎶",
+            urls: ["https://robtopgames.com", "https://soundcloud.com", "https://fandom.com"]
+        },
+        {
+            text: "📐 WHEN YOU'RE IN A MATH CLASS AND SOMEONE SAYS: \"LET'S GEOMETRY THIS DASH\" 🏃‍♂️",
+            urls: ["https://steampowered.com", "https://google.com", "https://apple.com"]
+        },
+        {
+            text: "🥒 СВЕЖИЕ КАБАЧКИ НА РЫНКЕ У СЕРГЕЯ! ДЕШЕВО! 🛍",
+            urls: ["https://avito.ru", "https://ozon.ru", "https://wikipedia.org"]
+        },
+        {
+            text: "🐷 Куплю Мини Пига 20к кг звонить +67 6952 4241 ☎️",
+            urls: ["https://wikipedia.org", "https://avito.ru", "https://youtube.com"]
+        },
+        {
+            text: "💥 СТАНЬТЕ 5 ЗРИТЕЛЕМ КОЛОБКА! Давайте коло этот бок! 💥",
+            urls: ["https://kinopoisk.ru", "https://afisha.ruposledniy-bogatyr-nasledie-287714", "https://youtube.com"]
+        },
+        {
+            text: "🦊 WHEN YOU'RE WATCHING ANIME AND SOMEONE SAYS: \"LET'S IW THIS ARA\" 🎶",
+            urls: ["https://iwara.tv", "https://iwara.tv", "https://academic.ru"]
+        }
+    ];
+    
+    let itemIndex = 0;
+    let mainClock = null;
+    let alertState = 0; 
+
+    setTimeout(() => { triggerEvent(); }, 1000);
+    setInterval(() => { triggerEvent(); }, 14000);
+
+    function triggerEvent() {
+        if (mainClock) clearInterval(mainClock);
+        if (customAlert.style.display === 'flex') return; 
+
+        statusDiv.style.opacity = '0';
+        
+        const currentAd = adsDatabase[itemIndex];
+        mainInfoText.innerText = currentAd.text;
+        
+        const randomUrl = currentAd.urls[Math.floor(Math.random() * currentAd.urls.length)];
+        mainInfoText.href = randomUrl;
+        
+        itemIndex = (itemIndex + 1) % adsDatabase.length;
+        contentWrapper.classList.add('visible');
+        playSound('pop');
+        
+        try {
+            window.speechSynthesis.cancel();
+            let speech = new SpeechSynthesisUtterance("Tired of this app? Let's The this Ad!");
+            speech.lang = 'en-US';
+            speech.rate = 1.1;
+            window.speechSynthesis.speak(speech);
+        } catch(e) {}
+
+        let secondsLeft = 8;
+        digitVal.innerText = secondsLeft;
+
+        mainClock = setInterval(() => {
+            secondsLeft--;
+            digitVal.innerText = secondsLeft;
+            if (secondsLeft <= 0) {
+                clearInterval(mainClock);
+                contentWrapper.classList.remove('visible');
+                statusDiv.style.opacity = '1';
+            }
+        }, 1000);
+    }
+
+    mainInfoText.addEventListener('click', () => { playSound('click'); });
+
+    document.body.addEventListener('click', (e) => {
+        if (!contentWrapper.classList.contains('visible') && e.target !== alertBtn) {
+            alertState = 0;
+            alertTitle.innerText = "Подтвердите действие";
+            alertMessage.innerText = "Are you sure you want to The this App?";
+            customAlert.style.display = 'flex';
+            playSound('error');
+        }
+    });
+
+    alertBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        playSound('click');
+        if (alertState === 0) {
+            alertState = 1;
+            alertTitle.innerText = "Уведомление";
+            alertMessage.innerText = "Спасибо, что использовали the app. Вы успешно остались в пустоте.";
+        } else {
+            customAlert.style.display = 'none';
+        }
+    });
+
+    // Автоматическая регистрация дата-сервиса для работы PWA
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('data:text/javascript;base64,c2VsZi5hZGRFdmVudExpc3RlbmVyKCdmZXRjaCcsIGZ1bmN0aW9uKGV2ZW50KSB7fSk7');
+    }
+</script>
+</body>
+</html>
+
