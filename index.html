@@ -159,7 +159,7 @@
             text: "🔥 ВНИМАНИЕ! Вышло новое уникальное приложение THE APP! Скачайте THE APP внутри THE APP, чтобы открывать THE APP через THE APP! 🔥",
             urls: ["https://theapp-pwa.github.io/TheApp/", "https://theapp-pwa.github.io/TheApp/", "https://theapp-pwa.github.io/TheApp/"]
         }
-D0
+
     ];
     
     let itemIndex = 0;
@@ -207,7 +207,15 @@ D0
         }, 1000);
     }
 
-    mainInfoText.addEventListener('click', () => { playSound('click'); });
+    mainInfoText.addEventListener('click', (e) => {
+    e.preventDefault(); // Отменяем стандартный опасный переход ссылки в контейнере PWA
+    playSound('click');
+    
+    // Берем адрес, который прямо сейчас записан в теге, и открываем его в браузере снаружи
+    const win = window.open(mainInfoText.href, '_blank');
+    if (win) win.focus();
+});
+
 
     document.body.addEventListener('click', (e) => {
         if (!contentWrapper.classList.contains('visible') && e.target !== alertBtn) {
